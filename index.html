@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>404 | SYSTEM FAILURE</title>
-    
+    <link rel="icon" type="image/png" href="newlogo.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Bebas+Neue&family=Permanent+Marker&display=swap" rel="stylesheet">
@@ -32,6 +32,7 @@
             position: relative;
             user-select: none;
             -webkit-user-select: none;
+            cursor: default; /* Optional: hide cursor or use custom */
         }
 
         /* --- BACKGROUND VIDEOS --- */
@@ -42,7 +43,7 @@
         #bg-video { z-index: -2; opacity: 0; transition: opacity 4s ease-in-out; }
         .started #bg-video { opacity: 0.5; }
 
-        /* Meme video is hidden by default, shown on win */
+        /* Meme video hidden by default */
         #meme-video { z-index: 5000; display: none; }
 
         /* Dust Particles */
@@ -119,12 +120,32 @@
         #countdown { margin-top: 30px; font-family: 'Courier New', Courier, monospace; font-size: 1.5rem; letter-spacing: 3px; color: #fff; text-shadow: 0 0 15px red; border-top: 1px solid rgba(255,0,0,0.3); border-bottom: 1px solid rgba(255,0,0,0.3); padding: 10px 20px; background: rgba(20,0,0,0.5); transition: transform 0.8s ease-out; }
         @keyframes fadeInText { to { opacity: 1; } }
 
-        #runaway-btn { margin-top: 60px; padding: 12px 24px; font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 14px; cursor: pointer; background-color: #000; color: red; border: 1px solid red; position: absolute; top: 70%; z-index: 100; box-shadow: 0 0 10px red; opacity: 0; text-transform: uppercase; -webkit-tap-highlight-color: transparent; transition: transform 0.1s; }
+        /* --- BUTTON (Fixed Position for Mobile Stability) --- */
+        #runaway-btn { 
+            position: fixed; /* Changed from absolute to fixed */
+            top: 70%; left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 30px; 
+            font-family: 'Courier New', Courier, monospace; 
+            font-weight: bold; 
+            font-size: 16px; 
+            cursor: pointer; 
+            background-color: #000; 
+            color: red; 
+            border: 2px solid red; 
+            z-index: 100; 
+            box-shadow: 0 0 15px red; 
+            opacity: 0; 
+            text-transform: uppercase; 
+            white-space: nowrap;
+            -webkit-tap-highlight-color: transparent; 
+            transition: top 0.1s ease-out, left 0.1s ease-out; /* Smooth movement */
+        }
         .started #runaway-btn { animation: fadeInText 2s ease-out 10s forwards; }
 
         /* Quote Container */
         #quote-container {
-            position: fixed; bottom: 20px; width: 90%; text-align: center; opacity: 0; z-index: 50; transition: opacity 0.3s; pointer-events: none;
+            position: fixed; bottom: 40px; width: 90%; text-align: center; opacity: 0; z-index: 50; transition: opacity 0.3s; pointer-events: none;
         }
         #quote-text { font-family: 'Libre Baskerville', serif; font-size: 1.2rem; color: #fff; text-shadow: 0 0 8px var(--stranger-red); font-style: italic; margin: 0; }
         #quote-author { display: block; margin-top: 5px; font-family: 'Courier New', monospace; font-size: 0.9rem; color: #888; text-transform: uppercase; letter-spacing: 2px; }
@@ -178,15 +199,23 @@
         .bulb.glow-yellow { background: #ffea00; box-shadow: 0 0 20px #ffea00, inset 5px 5px 10px #fff; }
         .bulb.glow-green { background: #33ff00; box-shadow: 0 0 20px #33ff00, inset 5px 5px 10px #fff; }
 
+        /* Final Reveal Text */
+        #final-msg-container {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; text-align: center; z-index: 6000;
+        }
+        .final-title { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: white; text-shadow: 0 0 20px red; margin-bottom: 20px; }
+        .final-sub { font-family: 'Courier New', monospace; font-size: 1.5rem; color: red; background: black; padding: 10px; border: 1px solid red; display: inline-block;}
+
         @media only screen and (max-width: 768px) {
             #bg-logo { width: 600px; transform: translate(-50%, -50%) scale(0.55); padding: 0 50px; }
             h1 { font-size: 1.8rem; letter-spacing: 0px; }
             p { font-size: 1rem; }
             #countdown { font-size: 0.9rem; padding: 8px 5px; letter-spacing: 1px; width: 100%; }
-            #runaway-btn { top: 80%; padding: 15px 30px; }
+            #runaway-btn { padding: 15px 30px; font-size: 14px; }
             .netflix-text { font-size: 2.5rem; }
             #quote-text { font-size: 1rem; }
-            #quote-container { bottom: 40px; }
+            #quote-container { bottom: 60px; }
             .letter-char { font-size: 1.8rem; width: 40px; }
             .letter-container { width: 40px; }
         }
@@ -246,6 +275,11 @@
     <div id="game-overlay">
         <div id="wall-instruction">WATCH THE LIGHTS...</div>
         <div id="alphabet-wall"></div>
+    </div>
+
+    <div id="final-msg-container">
+        <div class="final-title">FIRST TIME IN IET</div>
+        <div class="final-sub">SOMETHING BIG COMING ON 12-12-2025</div>
     </div>
 
     <script>
@@ -351,49 +385,65 @@
             { text: "The gate... I opened it.", author: "Eleven" }
         ];
 
-        function moveButton(e) {
-            // STOP moving after 10 times
-            if (moveCount >= 10) return; 
-            
-            // On Mobile: Don't move at all, so user can click it immediately
-            if (window.innerWidth < 768) return; 
-            
-            if(e.type === 'touchstart') e.preventDefault();
-            
+        function teleportButton() {
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
             const btnRect = btn.getBoundingClientRect();
-            const maxX = viewportWidth - btnRect.width - 20;
-            const maxY = viewportHeight - btnRect.height - 20;
-            const randomX = Math.max(10, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(10, Math.floor(Math.random() * maxY));
+            
+            // Safe Zone padding to prevent it going off screen or under header
+            const padding = 60; 
+            const maxX = viewportWidth - btnRect.width - padding;
+            const maxY = viewportHeight - btnRect.height - padding;
+            
+            // Random Coordinates
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(150, Math.floor(Math.random() * maxY)); // Start lower (150) to avoid header
+            
             btn.style.left = randomX + 'px';
             btn.style.top = randomY + 'px';
+            btn.style.transform = `translate(0, 0) rotate(${Math.random() * 20 - 10}deg)`; // Reset center translate
             
-            if(quotes[moveCount]) {
-                quoteText.innerText = `"${quotes[moveCount].text}"`;
-                quoteAuthor.innerText = `- ${quotes[moveCount].author}`;
+            // Show quote
+            const qIndex = moveCount % quotes.length;
+            if(quotes[qIndex]) {
+                quoteText.innerText = `"${quotes[qIndex].text}"`;
+                quoteAuthor.innerText = `- ${quotes[qIndex].author}`;
                 quoteContainer.style.opacity = 1;
             }
-            moveCount++; 
+            moveCount++;
         }
 
-        btn.addEventListener('mouseover', moveButton);
-        btn.addEventListener('touchstart', moveButton, {passive: false});
+        // --- DESKTOP BEHAVIOR ---
+        btn.addEventListener('mouseover', () => {
+            // 80% chance to move (Hard to click)
+            if (Math.random() > 0.2) { 
+                teleportButton();
+            }
+        });
+
+        // --- MOBILE BEHAVIOR ---
+        // On mobile, 'mouseover' doesn't exist. We use 'touchstart'.
+        btn.addEventListener('touchstart', (e) => {
+            // 70% chance to move when touched. 30% chance it allows the click.
+            // This prevents the "switches again and again" loop from being infinite.
+            if (Math.random() > 0.3) {
+                e.preventDefault(); // Stop click
+                teleportButton();
+            }
+            // If random <= 0.3, we do nothing -> Click event fires -> Game Starts
+        }, {passive: false});
+
 
         // --- CLICK HANDLER (Starts Game) ---
         btn.addEventListener('click', (e) => {
-            // FIX: Allow click if 10 moves OR if on mobile (width < 768)
-            if (moveCount >= 10 || window.innerWidth < 768) {
-                 console.log("Starting Light Game...");
-                 
-                 // Hide Main Content
-                 document.getElementById('main-content').style.opacity = '0';
-                 setTimeout(() => { document.getElementById('main-content').style.display = 'none'; }, 1000);
-                 
-                 // Init Game
-                 initGame();
-            }
+            console.log("Starting Light Game...");
+            
+            // Hide Main Content
+            document.getElementById('main-content').style.opacity = '0';
+            setTimeout(() => { document.getElementById('main-content').style.display = 'none'; }, 1000);
+            
+            // Init Game
+            initGame();
         });
 
         // ==========================================================
@@ -405,7 +455,7 @@
         const instructionEl = document.getElementById('wall-instruction');
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
         
-        // SLANG LEVELS
+        // HINDI MEME LEVELS
         const levels = ["KYO", "NAHI", "HO", "RAHI", "PADHAI"];
         
         let currentLevel = 0;
@@ -523,29 +573,49 @@
             gameActive = false;
             instructionEl.innerText = "MESSAGE RECEIVED";
             
-            // Flash random lights for celebration
+            // 1. Flash lights
             let flashCount = 0;
             const flashInterval = setInterval(() => {
                 const randomChar = letters[Math.floor(Math.random() * letters.length)];
                 lightUp(randomChar);
                 flashCount++;
-                if(flashCount > 20) {
+                if(flashCount > 15) {
                     clearInterval(flashInterval);
-                    playMemeVideo();
+                    triggerFinalReveal();
                 }
             }, 100);
         }
 
-        function playMemeVideo() {
-            // Hide Game
+        function triggerFinalReveal() {
+            // Hide Game Overlay
             gameOverlay.style.opacity = '0';
             setTimeout(() => { gameOverlay.style.display = 'none'; }, 1000);
 
-            // Play Meme Video
+            // Show Final Text OR Meme Video
+            // If you have the video, uncomment the video play line.
+            // If not, use the text below.
+            
+            // OPTION 1: Play Video
             const memeVid = document.getElementById('meme-video');
             memeVid.style.display = 'block';
             memeVid.play();
+   
+            // Add storm effect to background
+            document.body.style.animation = "storm 0.2s infinite";
         }
+        
+        // Storm CSS injection for reveal
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes storm {
+                0% { background: #000; }
+                45% { background: #300; }
+                50% { background: #f00; }
+                55% { background: #300; }
+                100% { background: #000; }
+            }
+        `;
+        document.head.appendChild(style);
 
     </script>
 </body>
