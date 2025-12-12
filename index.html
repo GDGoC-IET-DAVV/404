@@ -7,32 +7,35 @@
     <link rel="icon" type="image/png" href="newlogo.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Bebas+Neue&family=Permanent+Marker&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Bebas+Neue&family=Permanent+Marker&family=Share+Tech+Mono&family=Press+Start+2P&display=swap" rel="stylesheet">
 
     <style>
         /* --- 1. GLOBAL & LAYERS --- */
         :root {
             --base-color: #000000;
             --stranger-red: #e71d23;
-            --bulb-glow: rgba(255, 255, 255, 0.8);
         }
 
         body {
             background-color: var(--base-color);
             color: #ffffff;
             font-family: 'Courier New', Courier, monospace;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             text-align: center;
             position: relative;
             user-select: none;
             -webkit-user-select: none;
-            cursor: default; /* Optional: hide cursor or use custom */
+            cursor: default; 
+            transition: box-shadow 0.2s;
+            perspective: 1000px;
+            background-attachment: fixed;
         }
 
         /* --- BACKGROUND VIDEOS --- */
@@ -120,10 +123,9 @@
         #countdown { margin-top: 30px; font-family: 'Courier New', Courier, monospace; font-size: 1.5rem; letter-spacing: 3px; color: #fff; text-shadow: 0 0 15px red; border-top: 1px solid rgba(255,0,0,0.3); border-bottom: 1px solid rgba(255,0,0,0.3); padding: 10px 20px; background: rgba(20,0,0,0.5); transition: transform 0.8s ease-out; }
         @keyframes fadeInText { to { opacity: 1; } }
 
-        /* --- BUTTON (Fixed Position for Mobile Stability) --- */
+        /* --- BUTTON (Fixed Position) --- */
         #runaway-btn { 
-            position: fixed; /* Changed from absolute to fixed */
-            top: 70%; left: 50%;
+            position: fixed; top: 70%; left: 50%;
             transform: translate(-50%, -50%);
             padding: 15px 30px; 
             font-family: 'Courier New', Courier, monospace; 
@@ -139,7 +141,7 @@
             text-transform: uppercase; 
             white-space: nowrap;
             -webkit-tap-highlight-color: transparent; 
-            transition: top 0.1s ease-out, left 0.1s ease-out; /* Smooth movement */
+            transition: top 0.1s ease-out, left 0.1s ease-out; 
         }
         .started #runaway-btn { animation: fadeInText 2s ease-out 10s forwards; }
 
@@ -193,31 +195,316 @@
             width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; 
         }
 
-        /* Bulb Glow Colors */
         .bulb.glow-red { background: #ff0000; box-shadow: 0 0 20px #ff0000, inset 5px 5px 10px #fff; }
         .bulb.glow-blue { background: #00eaff; box-shadow: 0 0 20px #00eaff, inset 5px 5px 10px #fff; }
         .bulb.glow-yellow { background: #ffea00; box-shadow: 0 0 20px #ffea00, inset 5px 5px 10px #fff; }
         .bulb.glow-green { background: #33ff00; box-shadow: 0 0 20px #33ff00, inset 5px 5px 10px #fff; }
 
-        /* Final Reveal Text */
-        #final-msg-container {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; text-align: center; z-index: 6000;
+        /* ========================================= */
+        /* === GRAND REVEAL STYLES (THE RIFT) === */
+        /* ========================================= */
+        #grand-reveal {
+            position: relative;
+            width: 100%; min-height: 100vh;
+            z-index: 10000; /* Highest priority */
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            display: none; justify-content: center; align-items: center;
+            flex-direction: column;
+            opacity: 0; transition: opacity 0.5s;
+            padding: 72px 16px 120px;
+            overflow: visible;
+            background-attachment: fixed;
         }
-        .final-title { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: white; text-shadow: 0 0 20px red; margin-bottom: 20px; }
-        .final-sub { font-family: 'Courier New', monospace; font-size: 1.5rem; color: red; background: black; padding: 10px; border: 1px solid red; display: inline-block;}
+
+        /* Red-core / black vignette overlay that persists while scrolling */
+        #grand-reveal::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 35%, rgba(255, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.9) 40%, #000 65%),
+                radial-gradient(circle at 50% 65%, rgba(0, 0, 0, 0.8) 0%, #000 80%),
+                linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.95));
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* --- 1. TV OFF EFFECT --- */
+        #tv-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 20000; pointer-events: none;
+            opacity: 0; display: none;
+        }
+        .tv-off-anim {
+            display: block !important;
+            animation: tv-off 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+        @keyframes tv-off {
+            0% { opacity: 1; transform: scale(1, 1); }
+            40% { opacity: 1; transform: scale(1, 0.005); }
+            100% { opacity: 1; transform: scale(0, 0); }
+        }
+
+        /* --- 2. BACK LIGHT (Small & Vignetted) --- */
+        .back-light {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 4px; height: 4px;
+            background: #fff; /* White core */
+            box-shadow: 0 0 10px 5px rgba(200, 200, 200, 0.5); 
+            z-index: -1;
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 4s ease-in-out; 
+        }
+        /* Vignette Overlay to enhance darkness */
+        .vignette-layer {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle, transparent 20%, #000 90%);
+            z-index: 0; pointer-events: none;
+        }
+        
+        .light-expand {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 0.8; 
+        }
+        .light-fill-screen {
+            transform: translate(-50%, -50%) scale(300);
+            background: #ff0000; /* Turns red at end */
+            opacity: 0.2;
+            transition: transform 3s ease-out, opacity 3s, background 1s;
+        }
+
+        /* --- 3. 3D CARD CONTAINER --- */
+        .rift-container {
+            position: relative;
+            padding: 12px;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 12px;
+            max-width: 95%;
+            text-align: center;
+            z-index: 10;
+            perspective: 1000px;
+        }
+
+        .reveal-layout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .reveal-flex {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        /* Plain White Cinematic Text (Bebas Neue) */
+        .reveal-title {
+            font-family: 'Share Tech Mono', monospace; font-size: 2.8rem; color: #fff;
+            text-shadow: none; margin: 8px 0; letter-spacing: 4px;
+            text-transform: uppercase;
+            opacity: 0; 
+            transition: opacity 1s ease-in;
+        }
+        .title-show { opacity: 1; }
+        .move-up { transform: translateY(-20px); transition: transform 2s ease-in-out; }
+
+        /* --- 4. INTERACTIVE CARD & GRID --- */
+        #card-wrapper {
+            width: 440px;
+            aspect-ratio: 2 / 3;
+            height: auto;
+            max-width: 95vw;
+            max-height: 75vh;
+            position: relative;
+            transform-style: preserve-3d;
+            opacity: 0; 
+            margin: 12px 0 4px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Smooth pan/zoom */
+        }
+        
+          #poster-img {
+            position: absolute;
+            inset: 0;
+            width: 100%; height: 100%; 
+            object-fit: contain;
+            background: #000;
+            border-radius: 8px;
+            display: block;
+        }
+        
+        /* CARD SCANLINES (TV LINE EFFECT) */
+        #card-wrapper::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 5; background-size: 100% 2px, 3px 100%; pointer-events: none; border-radius: 4px;
+        }
+
+        /* GRID OVERLAY (Red Lines) */
+        #grid-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr); /* 10x10 Grid */
+            grid-template-rows: repeat(10, 1fr);
+            z-index: 20;
+            border: 1px solid #500;
+            border-radius: 8px;
+        }
+        .grid-cell {
+            background-color:#000; /* let poster show through */
+            border: 1px solid rgba(255, 0, 0, 0.2); 
+            transition: opacity 0.1s ease-out;
+        }
+        
+        /* Peek Logic */
+        .peek-reveal { opacity: 0 !important; }
+        
+        /* Burning Animation from Center */
+        .burn {
+            background-color: #ff3300;
+            box-shadow: 0 0 20px #ff3300;
+            border-color: #fff;
+            opacity: 1;
+            transition: all 0.1s;
+        }
+        .vanish {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s;
+        }
+
+        /* Shining Edge Effect */
+        #card-wrapper::after {
+            content: ""; position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px;
+            background: linear-gradient(45deg, #500, #f00, #500);
+            z-index: -1; border-radius: 5px; opacity: 0; transition: opacity 0.3s;
+        }
+        #card-wrapper:hover::after { opacity: 0.8; animation: shimmer 2s infinite linear; }
+        @keyframes shimmer { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+        /* --- 5. RETRO BUTTONS --- */
+        .action-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .interaction-area, .share-area {
+            margin-top: 0;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 12px;
+            padding: 16px 18px;
+            position: relative; opacity: 0; transition: opacity 1s;
+            background: radial-gradient(circle at center, rgba(255,0,0,0.12) 0%, rgba(0,0,0,0.88) 65%);
+            border: 1px solid rgba(255,0,0,0.2);
+            border-radius: 12px;
+            box-shadow: 0 0 24px rgba(0,0,0,0.45);
+            width: 100%;
+            max-width: 520px;
+            flex-shrink: 0;
+        }
+        .btn-row { display: flex; gap: 40px; }
+        .btn-row:last-of-type { flex-wrap: wrap; justify-content: center; gap: 20px; }
+
+        .retro-btn {
+            background: #000; color: #fff; padding: 10px 20px;
+            font-family: 'Press Start 2P', cursive; font-size: 0.9rem;
+            border: 2px solid #fff; cursor: pointer;
+            box-shadow: 4px 4px 0px #555;
+            display: flex; align-items: center; gap: 10px;
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+        .retro-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #222; }
+        .retro-btn.full { width: 100%; justify-content: center; }
+        .retro-btn .icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+        
+        .parallax-wrap {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            will-change: transform;
+            transition: transform 0.25s ease-out;
+        }
+
+        .download-btn {
+            margin-top: 12px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 16px;
+            border: 2px dashed rgba(255,0,0,0.6);
+            border-radius: 12px;
+            background: rgba(0,0,0,0.65);
+            box-shadow: 0 0 12px rgba(255,0,0,0.25);
+        }
+        .download-btn.full { display: block; width: 100%; text-align: center; }
+
+        .late-banner {
+            display: none;
+            margin: 0 auto 12px;
+            padding: 12px 16px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            color: #ff6b6b;
+            text-transform: uppercase;
+            border: 1px solid rgba(255,0,0,0.4);
+            background: rgba(0,0,0,0.65);
+            box-shadow: 0 0 14px rgba(255,0,0,0.25);
+            max-width: 640px;
+        }
+        
+        .like-btn:hover { border-color: #0f0; color: #0f0; box-shadow: 4px 4px 0px #050; }
+        .dislike-btn:hover { border-color: #f00; color: #f00; box-shadow: 4px 4px 0px #500; }
+        
+        .secret-message {
+            margin-top: 25px; font-family: 'Courier New', monospace; font-size: 1rem;
+            color: #ccc; text-transform: uppercase; letter-spacing: 2px;
+            opacity: 0; transition: opacity 0.3s;
+        }
+
+        /* --- 6. AGGRESSIVE GLITCH EFFECTS --- */
+        .glitch-active { animation: glitch-anim 0.15s infinite; }
+        @keyframes glitch-anim {
+            0% { transform: translate(0); clip-path: inset(0 0 0 0); }
+            20% { transform: translate(-5px, 5px) skewX(5deg); clip-path: inset(10% 0 0 0); filter: contrast(1.5) hue-rotate(90deg); }
+            40% { transform: translate(5px, -5px) skewX(-5deg); clip-path: inset(0 0 10% 0); }
+            60% { transform: translate(-5px, 0); filter: invert(0.2); }
+            80% { transform: translate(5px, 0); }
+            100% { transform: translate(0); clip-path: inset(0 0 0 0); filter: none; }
+        }
 
         @media only screen and (max-width: 768px) {
             #bg-logo { width: 600px; transform: translate(-50%, -50%) scale(0.55); padding: 0 50px; }
             h1 { font-size: 1.8rem; letter-spacing: 0px; }
-            p { font-size: 1rem; }
-            #countdown { font-size: 0.9rem; padding: 8px 5px; letter-spacing: 1px; width: 100%; }
-            #runaway-btn { padding: 15px 30px; font-size: 14px; }
-            .netflix-text { font-size: 2.5rem; }
-            #quote-text { font-size: 1rem; }
-            #quote-container { bottom: 60px; }
-            .letter-char { font-size: 1.8rem; width: 40px; }
-            .letter-container { width: 40px; }
+            .reveal-title { font-size: 2.5rem; }
+            #card-wrapper { width: 95vw; aspect-ratio: 2 / 3; height: auto; max-height: 75vh; }
+            .reveal-flex { flex-direction: column; align-items: center; }
+            .interaction-area, .share-area { width: 100%; max-width: 95vw; }
+            .retro-btn { font-size: 0.7rem; padding: 10px; }
         }
     </style>
 </head>
@@ -232,8 +519,12 @@
         <source src="meme.mp4" type="video/mp4">
     </video>
 
+    <!-- AUDIO FILES -->
     <audio id="theme-audio" src="Stranger_Things.mp3"></audio>
     <audio id="hammer-audio" src="hammer.mp3"></audio>
+    <audio id="clock-audio" src="vecna_clock.mp3"></audio>
+    <audio id="thunder-audio" src="thunder_crack.mp3"></audio>
+    <audio id="buzz-audio" src="electric_buzz.mp3"></audio>
 
     <canvas id="dust-canvas"></canvas>
 
@@ -260,7 +551,7 @@
 
         <div class="text-container explode-target">
             <h1>404 | NOT FOUND</h1>
-            <p>coming SOON <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></p>
+            <p id="sub-text">coming SOON <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></p>
             <div id="countdown" class="explode-target">Loading Timeline...</div>
         </div>
 
@@ -277,9 +568,66 @@
         <div id="alphabet-wall"></div>
     </div>
 
-    <div id="final-msg-container">
-        <div class="final-title">FIRST TIME IN IET</div>
-        <div class="final-sub">SOMETHING BIG COMING ON 12-12-2025</div>
+    <!-- GRAND REVEAL SECTION -->
+    <div id="tv-overlay"></div> <!-- White flash overlay -->
+    
+    <div id="grand-reveal">
+        <div class="back-light"></div> <!-- Burst of light from back -->
+        <div class="vignette-layer"></div>
+        
+        <div class="rift-container">
+            <div class="late-banner" id="late-banner">Sorry, you are late for the reveal. The card has already been unveiled.</div>
+            <!-- Title -->
+            <h1 class="reveal-title" id="final-header"></h1>
+
+            <!-- 3D Card Wrapper -->
+            <div class="reveal-flex">
+                <div class="parallax-wrap" id="card-parallax">
+                    <div id="card-wrapper">
+                        <div id="grid-overlay"></div> <!-- GRID GENERATED HERE -->
+                        <img id="poster-img" src="poster.png" alt="Event Poster" onerror="this.style.display='none'">
+                    </div>
+                </div>
+            
+                <div class="action-stack parallax-wrap" id="actions-parallax">
+                    <div class="interaction-area" id="vote-area">
+                        <div class="btn-row">
+                            <button class="retro-btn like-btn" onclick="addLike()">
+                                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 21h7a3 3 0 0 0 3-3v-9a3 3 0 0 0-3-3h-4.3l.6-3.2A1.5 1.5 0 0 0 9.9 1L6 8v13h4Zm-6 0h3V10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2Z"/></svg>
+                                LIKE <span id="like-count"></span>
+                            </button>
+                            
+                            <button class="retro-btn dislike-btn" id="dislike-btn">
+                                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h4.3l-.6 3.2A1.5 1.5 0 0 0 14.1 23L18 16V3h-4Zm6 0h-3v11h3a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg>
+                                DISLIKE
+                            </button>
+                        </div>
+                        <div class="secret-message" id="secret-msg">
+                            Dislike? NOT JUST AN ORDINARY TECH CLUB
+                        </div>
+                    </div>
+
+                    <div class="share-area" id="share-area">
+                        <div class="btn-row">
+                            <button class="retro-btn full" onclick="shareWhatsApp()">
+                                <!-- <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4 1.1-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 5c0 4.7 3.8 8.5 8.5 8.5h.7l-.8-2.4-1.8 1.1c-2.8 0-5.1-2.3-5.1-5.1l1.1-1.8L6 7.7V8Z"/></svg> -->
+                                WhatsApp
+                            </button>
+                        </div>
+                        <div class="btn-row">
+                            <button class="retro-btn full" onclick="shareInstagram()">
+                                <!-- <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7Zm5 3.5A3.5 3.5 0 1 1 8.5 12 3.5 3.5 0 0 1 12 8.5ZM17 6a1 1 0 1 1-1 1 1 1 0 0 1 1-1Z"/><circle cx="12" cy="12" r="2.2"/></svg> -->
+                                Instagram
+                            </button>
+                        </div>
+                        <div class="btn-row">
+                            <button class="retro-btn full" onclick="copyShareLink()">Copy Link</button>
+                        </div>
+                        <a class="download-btn full" id="download-poster" href="poster.png" download="poster.png">Download the Poster</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -346,24 +694,426 @@
                 hammerAudio.playbackRate = 1.2; if(navigator.vibrate) navigator.vibrate(500);
                 introOverlay.style.opacity = 0; setTimeout(() => { introOverlay.style.display = 'none'; }, 1000);
                 document.body.classList.add('started'); document.getElementById('theme-audio').play().catch(()=>{});
+                armCountdown(); // start timer once the 404 page is visible
             }
             if(hitCount <= 4) hammerAudio.play().catch(e=>console.log(e));
         }
         introOverlay.addEventListener('mousedown', handleSmash);
         introOverlay.addEventListener('touchstart', (e) => { e.preventDefault(); handleSmash(); }, {passive: false});
 
-        // --- 4. COUNTDOWN ---
-        const targetDate = new Date('December 12, 2025 12:12:12');
+        // --- 4. COUNTDOWN SYSTEM ---
+        const REVEAL_DATE = new Date('2025-12-12T12:12:00');
+        const TEST_COUNTDOWN_MS = 20000;
+        const USE_TEST_COUNTDOWN = false; // live mode: counts to 12:12 PM on 12/12/2025
+        const FORCE_LATE_PREVIEW = false; // set true only to preview late flow
+        const isLateViewer = FORCE_LATE_PREVIEW || (!USE_TEST_COUNTDOWN && Date.now() >= REVEAL_DATE.getTime());
+        let targetDate = null;
+        let countdownStarted = false;
+        let allowReveal = false;
+        let lateMode = false;
+        
+        // DEBUG: Type finishNow() in console
+        window.finishNow = function() { 
+            countdownStarted = true;
+            targetDate = new Date().getTime() + TEST_COUNTDOWN_MS; 
+            updateCountdown();
+        };
+        console.log("%c TYPE finishNow() TO START REVEAL SEQUENCE", "color: red; font-size: 20px; font-weight: bold;");
+
+        let revealTriggered = false;
+        let clockStarted = false;
+        let buzzingStarted = false;
+
+        // INIT GRID
+        function initGrid() {
+            const grid = document.getElementById('grid-overlay');
+            grid.innerHTML = '';
+            for(let i=0; i<100; i++) { // 10x10
+                const cell = document.createElement('div');
+                cell.classList.add('grid-cell');
+                cell.setAttribute('data-index', i);
+                grid.appendChild(cell);
+            }
+        }
+        initGrid();
+
+        function handleLateArrival() {
+            if (lateMode) return;
+            lateMode = true;
+            countdownStarted = true;
+            allowReveal = true;
+            targetDate = null;
+            const lateBanner = document.getElementById('late-banner');
+            if (lateBanner) lateBanner.style.display = 'block';
+            document.getElementById("countdown").innerHTML = "SORRY, YOU ARE LATE FOR THE REVEAL";
+            document.getElementById('sub-text').innerText = "The card has already been unveiled.";
+            introOverlay.style.opacity = 0;
+            introOverlay.style.display = 'none';
+            document.body.classList.add('started');
+            setTimeout(() => startRevealSequence(), 800);
+        }
+
+        if (isLateViewer) {
+            handleLateArrival();
+        }
+
+        function armCountdown() {
+            if (countdownStarted) return;
+            if (isLateViewer) {
+                handleLateArrival();
+                return;
+            }
+            countdownStarted = true;
+            revealTriggered = false;
+            clockStarted = false;
+            buzzingStarted = false;
+            allowReveal = false;
+            targetDate = USE_TEST_COUNTDOWN ? (new Date().getTime() + TEST_COUNTDOWN_MS) : REVEAL_DATE.getTime();
+            updateCountdown();
+        }
+
+        window.addEventListener('load', () => {
+            if (!countdownStarted && !isLateViewer) {
+                armCountdown();
+            }
+        });
+
         function updateCountdown() {
-            const now = new Date().getTime(); const distance = targetDate - now;
-            if (distance < 0) { document.getElementById("countdown").innerHTML = "0d 0h 0m 0s"; return; }
+            if (lateMode) {
+                document.getElementById("countdown").innerHTML = "SORRY, YOU ARE LATE FOR THE REVEAL";
+                return;
+            }
+            if(!targetDate) {
+                document.getElementById("countdown").innerHTML = "Awaiting reveal...";
+                return;
+            }
+            const now = new Date().getTime(); 
+            const distance = targetDate - now;
+            
+            // --- T-12s: CLOCK STARTS ---
+            if(distance < 12000 && !clockStarted && distance > 0) {
+                clockStarted = true;
+                const clock = document.getElementById('clock-audio');
+                clock.volume = 1.0;
+                clock.play().catch(e=>console.log("Audio needed"));
+            }
+
+            // --- T-5s: RANDOM BUZZING ---
+            if (distance < 5000 && !buzzingStarted && distance > 0) {
+                buzzingStarted = true;
+                playRandomBuzz();
+            }
+
+            // --- T-0s: CHAOS & REVEAL ---
+            if (distance < 0) {
+                document.getElementById("countdown").innerHTML = "00:00:00:00";
+                if (!revealTriggered) {
+                    allowReveal = true; // countdown finished, gate open
+                    startRevealSequence();
+                }
+                return;
+            }
+
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
             document.getElementById("countdown").innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
         }
-        setInterval(updateCountdown, 1000); updateCountdown();
+        setInterval(updateCountdown, 100); updateCountdown();
+
+        function playRandomBuzz() {
+            if(revealTriggered) return;
+            const buzz = document.getElementById('buzz-audio');
+            if(Math.random() > 0.6) {
+                buzz.volume = 1.0;
+                buzz.currentTime = 0;
+                buzz.play();
+                setTimeout(() => buzz.pause(), 200 + Math.random()*300);
+                document.body.style.filter = "invert(1)"; 
+                setTimeout(() => document.body.style.filter = "none", 50);
+            }
+            setTimeout(playRandomBuzz, 500 + Math.random()*1000);
+        }
+
+        // --- HACKER TEXT EFFECT ---
+        const finalChars = "FINALLY IT IS HERE";
+        const randomChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        
+        function startHackerText() {
+            const header = document.getElementById('final-header');
+            let iterations = 0;
+            const interval = setInterval(() => {
+                header.innerText = finalChars.split("").map((letter, index) => {
+                    if(index < iterations) return finalChars[index];
+                    return randomChars[Math.floor(Math.random() * randomChars.length)];
+                }).join("");
+                if(iterations >= finalChars.length) clearInterval(interval);
+                iterations += 1/3; 
+            }, 30);
+        }
+
+        function startRevealSequence() {
+            // Prevent accidental double-click jumps: only run after countdown permits or other approved triggers.
+            if (!allowReveal && countdownStarted) return;
+            revealTriggered = true;
+            console.log("SEQUENCE STARTED...");
+            introOverlay.style.opacity = 0;
+            introOverlay.style.display = 'none';
+            document.body.style.overflowY = 'auto';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // 1. CHAOS (0s): Screen Shake + Glitch + Audio Cut
+            document.body.classList.add('glitch-active');
+            
+            // TV OFF (Immediate)
+            const tvOverlay = document.getElementById('tv-overlay');
+            tvOverlay.classList.add('tv-off-anim');
+            
+            document.getElementById('theme-audio').pause();
+            document.getElementById('buzz-audio').pause();
+            document.getElementById('clock-audio').pause();
+            
+            // REMOVE BG VIDEO & HIDE CONTENT
+            document.getElementById('bg-video').style.display = 'none';
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('game-overlay').style.display = 'none';
+            
+            // Go Dark
+            setTimeout(() => {
+                document.body.classList.remove('glitch-active');
+                document.body.style.backgroundColor = "black";
+                document.body.style.transform = "none";
+                document.body.style.filter = "none";
+                document.getElementById('grand-reveal').style.display = 'flex';
+                document.getElementById('grand-reveal').style.opacity = 1;
+            }, 500);
+
+            // 2. DOT OF LIGHT (T+2s) - Small dot with vignette
+            setTimeout(() => {
+                const light = document.querySelector('.back-light');
+                light.style.opacity = 1;
+                light.classList.add('light-expand'); 
+            }, 2000);
+
+            // 3. CARD APPEARS & THUNDER (T+4s) 
+            setTimeout(() => {
+                const card = document.getElementById('card-wrapper');
+                card.style.opacity = 1; // It's black grid initially
+                
+                // Play Thunder immediately upon arrival
+                const thunder = document.getElementById('thunder-audio');
+                thunder.volume = 1.0;
+                thunder.play();
+            }, 4000);
+
+            // 4. ZOOM PAN PEEK SEQUENCE (T+6s to T+12s)
+            
+            // Pan 1: Top Left
+            setTimeout(() => {
+                doZoomPan('top left', [0,1,10,11]);
+            }, 6000);
+
+            // Pan 2: Top Right (Glitch Transition)
+            setTimeout(() => {
+                triggerGlitchTransition();
+                doZoomPan('top right', [8,9,18,19]);
+            }, 9000);
+
+            // Pan 3: Center (Glitch Transition)
+            setTimeout(() => {
+                triggerGlitchTransition();
+                doZoomPan('center', [44,45,54,55]);
+            }, 12000);
+
+            // Zoom Out (Full View)
+            setTimeout(() => {
+                triggerGlitchTransition();
+                const card = document.getElementById('card-wrapper');
+                card.style.transform = "scale(1)";
+            }, 15000);
+
+            // 5. TEXT DECODES (T+17s)
+            setTimeout(() => {
+                startHackerText();
+                document.getElementById('final-header').classList.add('title-show');
+            }, 17000);
+
+            // 6. BACKGROUND SHIFT (T+20s)
+            setTimeout(() => {
+                const light = document.querySelector('.back-light');
+                light.classList.remove('light-expand');
+                light.classList.add('light-fill-screen');
+                document.getElementById('final-header').classList.add('move-up');
+            }, 20000);
+
+            // 7. FINAL BURN REVEAL (T+22s)
+            setTimeout(() => {
+                startCenterOutBurn();
+                
+                // Music & Buttons
+                setTimeout(() => {
+                    const theme = document.getElementById('theme-audio');
+                    theme.currentTime = 0;
+                    theme.play();
+                    document.querySelectorAll('.interaction-area, .share-area').forEach(el => el.style.opacity = 1);
+                    applyParallax();
+                    enableCardInteraction();
+                }, 2000);
+                
+            }, 22000);
+        }
+
+        function triggerGlitchTransition() {
+            document.body.classList.add('glitch-active');
+            const buzz = document.getElementById('buzz-audio');
+            buzz.currentTime = 0;
+            buzz.volume = 1.0;
+            buzz.play();
+            
+            setTimeout(() => {
+                document.body.classList.remove('glitch-active');
+                buzz.pause();
+            }, 300); // Short sharp glitch
+        }
+
+        // Helper for Zoom Pan
+        function doZoomPan(origin, indices) {
+            const card = document.getElementById('card-wrapper');
+            const cells = document.querySelectorAll('.grid-cell');
+
+            // Set transform origin without animation if possible? No, css transition is on.
+            // We use the glitch to hide the "jump" of origin change
+            card.style.transformOrigin = origin;
+            card.style.transform = "scale(2.5)"; // Stay zoomed
+            
+            // Reveal specific cells (Peek)
+            setTimeout(() => {
+                indices.forEach(i => cells[i].classList.add('peek-reveal'));
+            }, 300);
+
+            // Hide cells back
+            setTimeout(() => {
+                indices.forEach(i => cells[i].classList.remove('peek-reveal'));
+            }, 2500); // Keep visible for a bit
+        }
+
+        function startCenterOutBurn() {
+            const grid = document.getElementById('grid-overlay');
+            const cells = Array.from(grid.children);
+            const cols = 10;
+            const rows = 10;
+            const centerX = 4.5; 
+            const centerY = 4.5;
+
+            cells.forEach((cell, index) => {
+                const x = index % cols;
+                const y = Math.floor(index / cols);
+                const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+                const delay = distance * 200; 
+
+                setTimeout(() => {
+                    cell.classList.add('burn');
+                    setTimeout(() => { cell.classList.add('vanish'); }, 200);
+                }, delay);
+            });
+        }
+
+        // --- 3D CARD INTERACTION ---
+        function enableCardInteraction() {
+            const card = document.getElementById('card-wrapper');
+            const container = document.querySelector('.rift-container');
+            if (!card || !container) return;
+
+            container.addEventListener('mousemove', (e) => {
+                const rect = container.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -15; 
+                const rotateY = ((x - centerX) / centerX) * 15;
+
+                card.style.transform = `scale(1) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+
+            container.addEventListener('mouseleave', () => {
+                card.style.transform = `scale(1) perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+            });
+        }
+
+        function applyParallax() {
+            const scrollY = window.scrollY || window.pageYOffset;
+            const cardWrap = document.getElementById('card-parallax');
+            const actionsWrap = document.getElementById('actions-parallax');
+            if (cardWrap) cardWrap.style.transform = `translateY(${scrollY * 0.08}px)`;
+            if (actionsWrap) actionsWrap.style.transform = `translateY(${scrollY * 0.04}px)`;
+        }
+        window.addEventListener('scroll', applyParallax, { passive: true });
+
+        // --- INTERACTION BUTTONS ---
+        const dislikeBtn = document.getElementById('dislike-btn');
+        const secretMsg = document.getElementById('secret-msg');
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+
+        if (isTouchDevice) {
+            dislikeBtn.style.pointerEvents = "none";
+            dislikeBtn.setAttribute('disabled', 'disabled');
+            dislikeBtn.style.opacity = "0.6";
+        }
+
+        dislikeBtn.addEventListener('click', (e) => {
+            if (isTouchDevice) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        dislikeBtn.addEventListener('mouseenter', () => {
+            dislikeBtn.style.opacity = "0";
+            if (!isTouchDevice) dislikeBtn.style.pointerEvents = "none"; 
+            secretMsg.style.opacity = "1";
+        });
+
+        document.getElementById('vote-area').addEventListener('mouseleave', () => {
+            dislikeBtn.style.opacity = "1";
+            if (!isTouchDevice) dislikeBtn.style.pointerEvents = "auto";
+            secretMsg.style.opacity = "0";
+        });
+
+        function addLike() {
+            const countEl = document.getElementById('like-count');
+            let count = parseInt(countEl.innerText);
+            count++;
+            countEl.innerText = count;
+        }
+
+        function shareWhatsApp() {
+            const text = encodeURIComponent("Check this out: " + window.location.href);
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+        }
+
+        function copyShareLink() {
+            const shareUrl = window.location.href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareUrl).catch(() => {});
+            }
+        }
+
+        function shareInstagram() {
+            const shareUrl = encodeURIComponent(window.location.href);
+            const shareText = encodeURIComponent("Check this drop: ");
+            const instagramDirect = `https://www.instagram.com/direct/new/?text=${shareText}${shareUrl}`;
+            if (navigator.share) {
+                navigator.share({
+                    title: "FINALLY IT IS HERE",
+                    text: "Check this drop",
+                    url: window.location.href
+                }).catch(() => window.open(instagramDirect, '_blank'));
+            } else {
+                window.open(instagramDirect, '_blank');
+            }
+        }
 
         // --- 5. RUNAWAY BUTTON ---
         const btn = document.getElementById('runaway-btn');
@@ -390,18 +1140,18 @@
             const viewportHeight = window.innerHeight;
             const btnRect = btn.getBoundingClientRect();
             
-            // Safe Zone padding to prevent it going off screen or under header
+            // Safe Zone padding
             const padding = 60; 
             const maxX = viewportWidth - btnRect.width - padding;
             const maxY = viewportHeight - btnRect.height - padding;
             
             // Random Coordinates
             const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(150, Math.floor(Math.random() * maxY)); // Start lower (150) to avoid header
+            const randomY = Math.max(150, Math.floor(Math.random() * maxY)); 
             
             btn.style.left = randomX + 'px';
             btn.style.top = randomY + 'px';
-            btn.style.transform = `translate(0, 0) rotate(${Math.random() * 20 - 10}deg)`; // Reset center translate
+            btn.style.transform = `translate(0, 0) rotate(${Math.random() * 20 - 10}deg)`; 
             
             // Show quote
             const qIndex = moveCount % quotes.length;
@@ -415,47 +1165,35 @@
 
         // --- DESKTOP BEHAVIOR ---
         btn.addEventListener('mouseover', () => {
-            // 80% chance to move (Hard to click)
             if (Math.random() > 0.2) { 
                 teleportButton();
             }
         });
 
         // --- MOBILE BEHAVIOR ---
-        // On mobile, 'mouseover' doesn't exist. We use 'touchstart'.
         btn.addEventListener('touchstart', (e) => {
-            // 70% chance to move when touched. 30% chance it allows the click.
-            // This prevents the "switches again and again" loop from being infinite.
             if (Math.random() > 0.3) {
-                e.preventDefault(); // Stop click
+                e.preventDefault(); 
                 teleportButton();
             }
-            // If random <= 0.3, we do nothing -> Click event fires -> Game Starts
         }, {passive: false});
 
 
         // --- CLICK HANDLER (Starts Game) ---
         btn.addEventListener('click', (e) => {
             console.log("Starting Light Game...");
-            
-            // Hide Main Content
             document.getElementById('main-content').style.opacity = '0';
             setTimeout(() => { document.getElementById('main-content').style.display = 'none'; }, 1000);
-            
-            // Init Game
             initGame();
         });
 
         // ==========================================================
         // === LIGHTBULB GAME LOGIC ===
         // ==========================================================
-        
         const gameOverlay = document.getElementById('game-overlay');
         const wallContainer = document.getElementById('alphabet-wall');
         const instructionEl = document.getElementById('wall-instruction');
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
-        
-        // HINDI MEME LEVELS
         const levels = ["KYO", "NAHI", "HO", "RAHI", "PADHAI"];
         
         let currentLevel = 0;
@@ -465,7 +1203,6 @@
         const bulbColors = ['red', 'blue', 'yellow', 'green'];
 
         function initGame() {
-            // Build the wall
             wallContainer.innerHTML = '';
             letters.forEach((char) => {
                 const div = document.createElement('div');
@@ -478,16 +1215,13 @@
                     <div class="bulb" data-color="glow-${color}"></div>
                     <div class="letter-char">${char}</div>
                 `;
-                
                 div.addEventListener('mousedown', () => handleInput(char));
                 div.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(char); });
                 wallContainer.appendChild(div);
             });
 
-            // Show Overlay
             gameOverlay.style.display = 'flex';
             setTimeout(() => { gameOverlay.style.opacity = '1'; }, 100);
-            
             gameActive = true;
             currentLevel = 0;
             startLevel();
@@ -499,10 +1233,7 @@
             const targetWord = levels[currentLevel];
             instructionEl.innerText = "WAIT...";
             instructionEl.style.color = "yellow";
-
-            setTimeout(() => {
-                playSequence(targetWord, 0);
-            }, 1000);
+            setTimeout(() => { playSequence(targetWord, 0); }, 1000);
         }
 
         function playSequence(word, index) {
@@ -514,11 +1245,8 @@
                 }, 500);
                 return;
             }
-
             const char = word[index];
             lightUp(char);
-
-            // Speed up as levels progress
             const delay = Math.max(400, 1000 - (currentLevel * 100));
             setTimeout(() => { playSequence(word, index + 1); }, delay);
         }
@@ -529,16 +1257,13 @@
             const bulb = el.querySelector('.bulb');
             const colorClass = bulb.dataset.color;
             bulb.classList.add(colorClass);
-            
             setTimeout(() => { bulb.classList.remove(colorClass); }, 600);
         }
 
         function handleInput(char) {
             if (!isPlayerTurn || !gameActive) return;
-
             const targetWord = levels[currentLevel];
             const expectedChar = targetWord[playerSequence.length];
-
             lightUp(char);
 
             if (char === expectedChar) {
@@ -554,17 +1279,14 @@
                     }
                 }
             } else {
-                // Wrong input
                 isPlayerTurn = false;
                 instructionEl.innerText = "RUN.";
                 instructionEl.style.color = "red";
-                
                 const allBulbs = document.querySelectorAll('.bulb');
                 allBulbs.forEach(b => b.classList.add('glow-red'));
-                
                 setTimeout(() => {
                     allBulbs.forEach(b => b.classList.remove('glow-red'));
-                    startLevel(); // Restart level
+                    startLevel(); 
                 }, 1000);
             }
         }
@@ -572,8 +1294,6 @@
         function winGame() {
             gameActive = false;
             instructionEl.innerText = "MESSAGE RECEIVED";
-            
-            // 1. Flash lights
             let flashCount = 0;
             const flashInterval = setInterval(() => {
                 const randomChar = letters[Math.floor(Math.random() * letters.length)];
@@ -581,42 +1301,12 @@
                 flashCount++;
                 if(flashCount > 15) {
                     clearInterval(flashInterval);
-                    triggerFinalReveal();
+                    // Instead of simple reveal, trigger the GRAND REVEAL logic
+                    allowReveal = true;
+                    startRevealSequence();
                 }
             }, 100);
         }
-
-        function triggerFinalReveal() {
-            // Hide Game Overlay
-            gameOverlay.style.opacity = '0';
-            setTimeout(() => { gameOverlay.style.display = 'none'; }, 1000);
-
-            // Show Final Text OR Meme Video
-            // If you have the video, uncomment the video play line.
-            // If not, use the text below.
-            
-            // OPTION 1: Play Video
-            const memeVid = document.getElementById('meme-video');
-            memeVid.style.display = 'block';
-            memeVid.play();
-   
-            // Add storm effect to background
-            document.body.style.animation = "storm 0.2s infinite";
-        }
-        
-        // Storm CSS injection for reveal
-        const style = document.createElement('style');
-        style.innerHTML = `
-            @keyframes storm {
-                0% { background: #000; }
-                45% { background: #300; }
-                50% { background: #f00; }
-                55% { background: #300; }
-                100% { background: #000; }
-            }
-        `;
-        document.head.appendChild(style);
-
     </script>
 </body>
 </html>
